@@ -112,7 +112,7 @@ u16 ChooseMoveAndTargetInBattlePalace(void)
 {
     s32 i, var1, var2;
     s32 chosenMoveId = -1;
-    struct ChooseMoveStruct *moveInfo = (struct ChooseMoveStruct*)(&gBattleBufferA[gActiveBattler][4]);
+    struct ChooseMoveStruct *moveInfo = (struct ChooseMoveStruct*)(&gBattleResources->bufferA[gActiveBattler][4]);
     u8 unusableMovesBits = CheckMoveLimitations(gActiveBattler, 0, 0xFF);
     s32 percent = Random() % 100;
 
@@ -210,7 +210,7 @@ u16 ChooseMoveAndTargetInBattlePalace(void)
 
     if (moveInfo->moves[chosenMoveId] == MOVE_CURSE)
     {
-        if (moveInfo->monType1 != TYPE_GHOST && moveInfo->monType2 != TYPE_GHOST)
+        if (moveInfo->monType1 != TYPE_GHOST && moveInfo->monType2 != TYPE_GHOST && moveInfo->monType3 != TYPE_GHOST)
             var1 = MOVE_TARGET_USER;
         else
             var1 = MOVE_TARGET_SELECTED;
@@ -477,7 +477,10 @@ static void Task_ClearBitWhenSpecialAnimDone(u8 taskId)
 // Great function to include newly added moves that don't have animation yet.
 bool8 IsMoveWithoutAnimation(u16 moveId, u8 animationTurn)
 {
-    return FALSE;
+    if (moveId >= (MOVES_COUNT_GEN6 - 1))
+        return TRUE;
+    else
+        return FALSE;
 }
 
 bool8 mplay_80342A4(u8 battlerId)
@@ -844,7 +847,7 @@ void CopyBattleSpriteInvisibility(u8 battlerId)
     gBattleSpritesDataPtr->battlerData[battlerId].invisible = gSprites[gBattlerSpriteIds[battlerId]].invisible;
 }
 
-void HandleSpeciesGfxDataChange(u8 battlerAtk, u8 battlerDef, bool8 notTransform)
+void HandleSpeciesGfxDataChange(u8 battlerAtk, u8 battlerDef, bool8 notTransform, bool32 megaEvo)
 {
     u16 paletteOffset;
     u32 personalityValue;
@@ -929,10 +932,13 @@ void HandleSpeciesGfxDataChange(u8 battlerAtk, u8 battlerDef, bool8 notTransform
             LoadPalette(gBattleStruct->castformPalette[0] + gBattleMonForms[battlerDef] * 16, paletteOffset, 32);
         }
 
-        BlendPalette(paletteOffset, 16, 6, RGB_WHITE);
-        CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
+        if (!megaEvo)
+        {
+            BlendPalette(paletteOffset, 16, 6, RGB_WHITE);
+            CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
+        }
 
-        if (!IsContest())
+        if (!IsContest() && !megaEvo)
         {
             gBattleSpritesDataPtr->battlerData[battlerAtk].transformSpecies = targetSpecies;
             gBattleMonForms[battlerAtk] = gBattleMonForms[battlerDef];
