@@ -881,6 +881,7 @@
 #define SPECIES_EGG 870
 #define NUM_SPECIES SPECIES_EGG
 
+
 // Unown forms, not actual species
 #define SPECIES_UNOWN_A NUM_SPECIES + 1
 #define SPECIES_UNOWN_B NUM_SPECIES + 2
@@ -910,6 +911,7 @@
 #define SPECIES_UNOWN_Z NUM_SPECIES + 26
 #define SPECIES_UNOWN_EMARK NUM_SPECIES + 27
 #define SPECIES_UNOWN_QMARK NUM_SPECIES + 28
+
 
 // National Dex Index Defines
 
