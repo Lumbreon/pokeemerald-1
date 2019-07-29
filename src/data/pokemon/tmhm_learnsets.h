@@ -1,10 +1,11 @@
 #define TMHM_LEARNSET(moves) {(u32)(moves), ((u64)(moves) >> 32)}
 #define TMHM(tmhm) ((u64)1 << (ITEM_##tmhm - ITEM_TM01_FOCUS_PUNCH))
-
+#define TMHM2(tmhm) ((u64)1 << (ITEM_##tmhm - ITEM_TM65))
+#define TMHM_LEARNSET_ACT(moves, moves2) {(u32)(moves), ((u64)(moves) >> 32), (u32)(moves2), ((u64)(moves2) >> 32)}
 // This table determines which TMs and HMs a species is capable of learning.
 // Each entry is a 64-bit bit array spread across two 32-bit values, with
 // each bit corresponding to a .
-const u32 gTMHMLearnsets[][2] =
+const u32 gTMHMLearnsets[][4] =
 {
     [SPECIES_NONE]        = TMHM_LEARNSET(TMHM(TM14_BLIZZARD)
 											| TMHM(HM01_CUT)
@@ -6289,7 +6290,7 @@ const u32 gTMHMLearnsets[][2] =
 											| TMHM(TM06_TOXIC)
 											| TMHM(TM03_WATER_PULSE)),
 
-    [SPECIES_TREECKO]     = TMHM_LEARNSET(TMHM(TM40_AERIAL_ACE)
+    [SPECIES_TREECKO]     = TMHM_LEARNSET_ACT(TMHM(TM40_AERIAL_ACE)
 											| TMHM(TM45_ATTRACT)
 											| TMHM(TM31_BRICK_BREAK)
 											| TMHM(TM09_BULLET_SEED)
@@ -6313,7 +6314,8 @@ const u32 gTMHMLearnsets[][2] =
 											| TMHM(TM22_SOLARBEAM)
 											| TMHM(HM04_STRENGTH)
 											| TMHM(TM11_SUNNY_DAY)
-											| TMHM(TM06_TOXIC)),
+											| TMHM(TM06_TOXIC),
+											TMHM2(TM66)),
 
     [SPECIES_GROVYLE]     = TMHM_LEARNSET(TMHM(TM40_AERIAL_ACE)
 											| TMHM(TM45_ATTRACT)

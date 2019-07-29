@@ -12,6 +12,7 @@
 #include "util.h"
 #include "pokemon.h"
 #include "constants/moves.h"
+#include "constants/abilities.h"
 #include "task.h"
 #include "sprite.h"
 #include "sound.h"
@@ -43,6 +44,7 @@ static bool8 ShouldAnimBeDoneRegardlessOfSubsitute(u8 animId);
 static void Task_ClearBitWhenBattleTableAnimDone(u8 taskId);
 static void Task_ClearBitWhenSpecialAnimDone(u8 taskId);
 static void ClearSpritesBattlerHealthboxAnimData(void);
+u8 GetIllusionMon(u8 side, u8 battlerId);
 
 // const rom data
 static const struct CompressedSpriteSheet sSpriteSheet_SinglesPlayerHealthbox =
@@ -504,17 +506,91 @@ bool8 mplay_80342A4(u8 battlerId)
 
     return TRUE;
 }
-
+u8 GetIllusionMon(u8 side, u8 battlerId)
+{
+	u8 i;
+	u8 mon;
+	if (IsDoubleBattle())
+	{
+		if (side == B_SIDE_OPPONENT)
+		{
+			for (i = 0; i < PARTY_SIZE; i++)
+			{
+				if (i == gBattlerPartyIndexes[(battlerId ^ 2)])
+					continue;
+				if (GetMonData(&gEnemyParty[i], MON_DATA_SPECIES) && !GetMonData(&gEnemyParty[i], MON_DATA_IS_EGG)
+					&& GetMonData(&gEnemyParty[i], MON_DATA_HP) && (!(gBattleTypeFlags & BATTLE_TYPE_ARENA) || !(gBattleStruct->arenaLostOpponentMons & gBitTable[i])))
+				{
+					mon = i;
+				}
+			}
+		}
+		else
+		{
+			for (i = 0; i < PARTY_SIZE; i++)
+			{
+				if (i == gBattlerPartyIndexes[(battlerId ^ 2)])
+					continue;
+				if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) && !GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG)
+					&& GetMonData(&gPlayerParty[i], MON_DATA_HP) && (!(gBattleTypeFlags & BATTLE_TYPE_ARENA) || !(gBattleStruct->arenaLostPlayerMons & gBitTable[i])))
+				{
+					mon = i;
+				}
+			}
+		}
+	}
+	else
+	{
+		if (side == B_SIDE_OPPONENT)
+		{
+			for (i = 0; i < PARTY_SIZE; i++)
+			{
+				if (GetMonData(&gEnemyParty[i], MON_DATA_SPECIES) && !GetMonData(&gEnemyParty[i], MON_DATA_IS_EGG)
+					&& GetMonData(&gEnemyParty[i], MON_DATA_HP) && (!(gBattleTypeFlags & BATTLE_TYPE_ARENA) || !(gBattleStruct->arenaLostOpponentMons & gBitTable[i])))
+				{
+					mon = i;
+				}
+			}
+		}
+		else
+		{
+			for (i = 0; i < PARTY_SIZE; i++)
+			{
+				if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) && !GetMonData(&gPlayerParty[i], MON_DATA_IS_EGG)
+					&& GetMonData(&gPlayerParty[i], MON_DATA_HP) && (!(gBattleTypeFlags & BATTLE_TYPE_ARENA) || !(gBattleStruct->arenaLostPlayerMons & gBitTable[i])))
+				{
+					mon = i;
+				}
+			}
+		}
+	}
+	return mon;
+}
 void BattleLoadOpponentMonSpriteGfx(struct Pokemon *mon, u8 battlerId)
 {
     u32 monsPersonality, currentPersonality, otId;
     u16 species;
     u8 position;
+    u8 dontBlendPalette = 0;
     u16 paletteOffset;
     const void *lzPaletteData;
-
+	
+	if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies == GetMonData(mon, MON_DATA_SPECIES))
+		dontBlendPalette = TRUE;
+	
     monsPersonality = GetMonData(mon, MON_DATA_PERSONALITY);
-
+	
+	if (GetMonAbility(mon) == ABILITY_ILLUSION && !(gDisableStructs[battlerId].illusion))
+	{
+		if(GetMonData(&gEnemyParty[GetIllusionMon(B_SIDE_OPPONENT, battlerId)], MON_DATA_SPECIES) == GetMonData(mon, MON_DATA_SPECIES))
+		{gDisableStructs[battlerId].illusion++;}
+		else
+		{
+			dontBlendPalette = TRUE;
+			gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies = GetMonData(&gEnemyParty[GetIllusionMon(B_SIDE_OPPONENT, battlerId)], MON_DATA_SPECIES);
+		}
+	}
+	
     if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies == SPECIES_NONE)
     {
         species = GetMonData(mon, MON_DATA_SPECIES);
@@ -551,7 +627,7 @@ void BattleLoadOpponentMonSpriteGfx(struct Pokemon *mon, u8 battlerId)
     }
 
     // transform's pink color
-    if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies != SPECIES_NONE)
+    if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies != SPECIES_NONE && !(dontBlendPalette))
     {
         BlendPalette(paletteOffset, 16, 6, RGB_WHITE);
         CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
@@ -563,11 +639,26 @@ void BattleLoadPlayerMonSpriteGfx(struct Pokemon *mon, u8 battlerId)
     u32 monsPersonality, currentPersonality, otId;
     u16 species;
     u8 position;
+    u8 dontBlendPalette = 0;
     u16 paletteOffset;
     const void *lzPaletteData;
 
+	if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies == GetMonData(mon, MON_DATA_SPECIES))
+		dontBlendPalette = TRUE;
+	
     monsPersonality = GetMonData(mon, MON_DATA_PERSONALITY);
 
+	if (GetMonAbility(mon) == ABILITY_ILLUSION && !(gDisableStructs[battlerId].illusion))
+	{
+		if (GetMonData(&gPlayerParty[GetIllusionMon(B_SIDE_PLAYER, battlerId)], MON_DATA_SPECIES) == GetMonData(mon, MON_DATA_SPECIES))
+		{gDisableStructs[battlerId].illusion++;}
+		else
+		{
+			dontBlendPalette = TRUE;
+			gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies = GetMonData(&gPlayerParty[GetIllusionMon(B_SIDE_PLAYER, battlerId)], MON_DATA_SPECIES);
+		}
+	}
+	
     if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies == SPECIES_NONE)
     {
         species = GetMonData(mon, MON_DATA_SPECIES);
@@ -614,7 +705,7 @@ void BattleLoadPlayerMonSpriteGfx(struct Pokemon *mon, u8 battlerId)
     }
 
     // transform's pink color
-    if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies != SPECIES_NONE)
+    if (gBattleSpritesDataPtr->battlerData[battlerId].transformSpecies != SPECIES_NONE && !(dontBlendPalette))
     {
         BlendPalette(paletteOffset, 16, 6, RGB_WHITE);
         CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
@@ -854,7 +945,7 @@ void HandleSpeciesGfxDataChange(u8 battlerAtk, u8 battlerDef, bool8 notTransform
     u32 otId;
     u8 position;
     const u32 *lzPaletteData;
-
+	
     if (notTransform)
     {
         StartSpriteAnim(&gSprites[gBattlerSpriteIds[battlerAtk]], gBattleSpritesDataPtr->animationData->animArg);
@@ -932,17 +1023,18 @@ void HandleSpeciesGfxDataChange(u8 battlerAtk, u8 battlerDef, bool8 notTransform
             LoadPalette(gBattleStruct->castformPalette[0] + gBattleMonForms[battlerDef] * 16, paletteOffset, 32);
         }
 
-        if (!megaEvo)
-        {
-            BlendPalette(paletteOffset, 16, 6, RGB_WHITE);
-            CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
-        }
-
         if (!IsContest() && !megaEvo)
         {
             gBattleSpritesDataPtr->battlerData[battlerAtk].transformSpecies = targetSpecies;
             gBattleMonForms[battlerAtk] = gBattleMonForms[battlerDef];
         }
+		
+        if (!megaEvo && !(gBattleSpritesDataPtr->battlerData[battlerAtk].transformSpecies == gBattleMons[battlerAtk].species))
+        {
+            BlendPalette(paletteOffset, 16, 6, RGB_WHITE);
+            CpuCopy32(gPlttBufferFaded + paletteOffset, gPlttBufferUnfaded + paletteOffset, 32);
+        }
+
 
         gSprites[gBattlerSpriteIds[battlerAtk]].pos1.y = GetBattlerSpriteDefault_Y(battlerAtk);
         StartSpriteAnim(&gSprites[gBattlerSpriteIds[battlerAtk]], gBattleMonForms[battlerAtk]);

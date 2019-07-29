@@ -4697,7 +4697,7 @@ static void atk4D_switchindataupdate(void)
     gBattleMons[gActiveBattler].type1 = gBaseStats[gBattleMons[gActiveBattler].species].type1;
     gBattleMons[gActiveBattler].type2 = gBaseStats[gBattleMons[gActiveBattler].species].type2;
     gBattleMons[gActiveBattler].type3 = TYPE_MYSTERY;
-    gBattleMons[gActiveBattler].ability = GetAbilityBySpecies(gBattleMons[gActiveBattler].species, gBattleMons[gActiveBattler].altAbility);
+    gBattleMons[gActiveBattler].ability = GetAbilityBySpecies(gBattleMons[gActiveBattler].species, gBattleMons[gActiveBattler].abilityNum);
 
 
     // check knocked off item
@@ -7533,6 +7533,28 @@ static void atk76_various(void)
             PREPARE_TYPE_BUFFER(gBattleTextBuff1, gBattleMoves[gCurrentMove].argument);
             gBattlescriptCurrInstr += 7;
         }
+        return;
+    case VARIOUS_BREAK_ILLUSION:
+            if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT)
+             && gBattleMons[gBattlerTarget].ability == ABILITY_ILLUSION
+             && !gProtectStructs[gBattlerAttacker].confusionSelfDmg
+             && !gDisableStructs[gBattlerTarget].illusion
+             && TARGET_TURN_DAMAGED)
+			 {
+				gDisableStructs[gBattlerTarget].illusion++;
+				gBattlerAbility = gBattlerTarget;
+				BattleScriptPush(gBattlescriptCurrInstr + 3);
+				gBattlescriptCurrInstr = BattleScript_BrokeIllusion;
+				return;
+			 }
+    case VARIOUS_UPDATE_NICKNAME:
+        if (GetBattlerSide(gActiveBattler) == B_SIDE_OPPONENT)
+            mon = &gEnemyParty[gBattlerPartyIndexes[gActiveBattler]];
+        else
+            mon = &gPlayerParty[gBattlerPartyIndexes[gActiveBattler]];
+		
+            UpdateHealthboxAttribute(gHealthboxSpriteIds[gActiveBattler], mon, HEALTHBOX_NICK);
+            gBattlescriptCurrInstr += 3;
         return;
     }
 

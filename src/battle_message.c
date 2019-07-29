@@ -24,7 +24,9 @@
 #include "constants/moves.h"
 #include "constants/species.h"
 #include "constants/trainers.h"
+#include "constants/abilities.h"
 
+u8 GetIllusionMon(u8 side, u8 battlerId);
 struct BattleWindowText
 {
     u8 fillValue;
@@ -663,9 +665,11 @@ static const u8 sText_TargetAteItem[] = _("{B_DEF_NAME_WITH_PREFIX} ate its {B_L
 static const u8 sText_AirBalloonFloat[] = _("{B_SCR_ACTIVE_NAME_WITH_PREFIX} floats in the air\nwith its {B_LAST_ITEM}!");
 static const u8 sText_AirBalloonPop[] = _("{B_DEF_NAME_WITH_PREFIX}'s {B_LAST_ITEM} popped!");
 static const u8 sText_IncinerateBurn[] = _("{B_EFF_NAME_WITH_PREFIX}'s {B_LAST_ITEM}\nwas burnt up!");
+static const u8 sText_IllusionBroke[] = _("{B_DEF_NAME_WITH_PREFIX} was using\nhis {B_DEF_ABILITY}...");
 
 const u8 *const gBattleStringsTable[BATTLESTRINGS_COUNT] =
 {
+    [STRINGID_UNDOILLUSION - 12] = sText_IllusionBroke,
     [STRINGID_INCINERATEBURN - 12] = sText_IncinerateBurn,
     [STRINGID_AIRBALLOONPOP - 12] = sText_AirBalloonPop,
     [STRINGID_AIRBALLOONFLOAT - 12] = sText_AirBalloonFloat,
@@ -2627,27 +2631,79 @@ static const u8* TryGetStatusString(u8 *src)
     }
     return NULL;
 }
+#define HANDLE_START_NICKNAME_STRING_CASE(battlerId, side) 																							\
+	if (side == B_SIDE_PLAYER)\
+	{\
+	if (GetMonAbility(&gPlayerParty[gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)]]) == ABILITY_ILLUSION)					\
+		{																																		\
+		if (gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)] != GetIllusionMon(side, battlerId))		\
+			GetMonData(&gPlayerParty[GetIllusionMon(side, battlerId)],													\
+            MON_DATA_NICKNAME, text);																											\
+		else																																	\
+			GetMonData(&gPlayerParty[gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)]],										\
+            MON_DATA_NICKNAME, text);																											\
+	}																																			\
+	else																																		\
+		GetMonData(&gPlayerParty[gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)]],											\
+		MON_DATA_NICKNAME, text);																												\
+																																				\
+         StringGetEnd10(text);																													\
+         toCpy = text; \
+	}\
+	else\
+	{\
+	if (GetMonAbility(&gEnemyParty[gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)]]) == ABILITY_ILLUSION)					\
+		{																																		\
+		if (gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)] != GetIllusionMon(side, battlerId))		\
+			GetMonData(&gEnemyParty[GetIllusionMon(side, battlerId)],													\
+            MON_DATA_NICKNAME, text);																											\
+		else																																	\
+			GetMonData(&gEnemyParty[gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)]],										\
+            MON_DATA_NICKNAME, text);																											\
+	}																																			\
+	else																																		\
+		GetMonData(&gEnemyParty[gBattlerPartyIndexes[GetBattlerAtPosition(battlerId)]],											\
+		MON_DATA_NICKNAME, text);																												\
+																																				\
+         StringGetEnd10(text);																													\
+	toCpy = text;}
 
-#define HANDLE_NICKNAME_STRING_CASE(battlerId, monIndex)                \
-    if (GetBattlerSide(battlerId) != B_SIDE_PLAYER)                     \
-    {                                                                   \
-        if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)                     \
-            toCpy = sText_FoePkmnPrefix;                                \
-        else                                                            \
-            toCpy = sText_WildPkmnPrefix;                               \
-        while (*toCpy != EOS)                                           \
-        {                                                               \
-            dst[dstID] = *toCpy;                                        \
-            dstID++;                                                    \
-            toCpy++;                                                    \
-        }                                                               \
-        GetMonData(&gEnemyParty[monIndex], MON_DATA_NICKNAME, text);    \
-    }                                                                   \
-    else                                                                \
-    {                                                                   \
-        GetMonData(&gPlayerParty[monIndex], MON_DATA_NICKNAME, text);   \
-    }                                                                   \
-    StringGetEnd10(text);                                               \
+#define HANDLE_NICKNAME_STRING_CASE(battlerId, monIndex)                										\
+    if (GetBattlerSide(battlerId) != B_SIDE_PLAYER)                     										\
+    {                                                                   										\
+        if (gBattleTypeFlags & BATTLE_TYPE_TRAINER)                     										\
+            toCpy = sText_FoePkmnPrefix;                                										\
+        else                                                            										\
+            toCpy = sText_WildPkmnPrefix;                               										\
+        while (*toCpy != EOS)                                           										\
+        {                                                               										\
+            dst[dstID] = *toCpy;                                        										\
+            dstID++;                                                    										\
+            toCpy++;                                                   										 	\
+        }                                                               										\
+		if (gBattleMons[battlerId].ability == ABILITY_ILLUSION && !gDisableStructs[battlerId].illusion)			\
+		{																										\
+			if (monIndex != GetIllusionMon(B_SIDE_OPPONENT, battlerId)) 										\
+			GetMonData(&gEnemyParty[GetIllusionMon(B_SIDE_OPPONENT, battlerId)], MON_DATA_NICKNAME, text);		\
+			else																								\
+			GetMonData(&gEnemyParty[monIndex], MON_DATA_NICKNAME, text);										\
+		}																										\
+		else 																									\
+			GetMonData(&gEnemyParty[monIndex], MON_DATA_NICKNAME, text);										\
+    }                                                                   										\
+    else                                                                										\
+    {                                                                   										\
+		if (gBattleMons[battlerId].ability == ABILITY_ILLUSION && !gDisableStructs[battlerId].illusion)			\
+		{																										\
+			if (monIndex != GetIllusionMon(B_SIDE_PLAYER, battlerId)) 										\
+			GetMonData(&gPlayerParty[GetIllusionMon(B_SIDE_PLAYER, battlerId)], MON_DATA_NICKNAME, text);   	\
+			else																								\
+			GetMonData(&gPlayerParty[monIndex], MON_DATA_NICKNAME, text);										\
+		}																										\
+		else 																									\
+			GetMonData(&gPlayerParty[monIndex], MON_DATA_NICKNAME, text);										\
+    }                                                                   										\
+    StringGetEnd10(text);                                               										\
     toCpy = text;
 
 static const u8 *BattleStringGetOpponentNameByTrainerId(u16 trainerId, u8 *text, u8 multiplayerId, u8 battlerId)
@@ -2846,28 +2902,17 @@ u32 BattleStringExpandPlaceholders(const u8 *src, u8 *dst)
                 toCpy = gStringVar3;
                 break;
             case B_TXT_PLAYER_MON1_NAME: // first player poke name
-                GetMonData(&gPlayerParty[gBattlerPartyIndexes[GetBattlerAtPosition(B_POSITION_PLAYER_LEFT)]],
-                           MON_DATA_NICKNAME, text);
-                StringGetEnd10(text);
-                toCpy = text;
+				HANDLE_START_NICKNAME_STRING_CASE(B_POSITION_PLAYER_LEFT, B_SIDE_PLAYER)
                 break;
             case B_TXT_OPPONENT_MON1_NAME: // first enemy poke name
-                GetMonData(&gEnemyParty[gBattlerPartyIndexes[GetBattlerAtPosition(B_POSITION_OPPONENT_LEFT)]],
-                           MON_DATA_NICKNAME, text);
-                StringGetEnd10(text);
-                toCpy = text;
+				HANDLE_START_NICKNAME_STRING_CASE(B_POSITION_OPPONENT_LEFT, B_SIDE_OPPONENT)
                 break;
             case B_TXT_PLAYER_MON2_NAME: // second player poke name
-                GetMonData(&gPlayerParty[gBattlerPartyIndexes[GetBattlerAtPosition(B_POSITION_PLAYER_RIGHT)]],
-                           MON_DATA_NICKNAME, text);
-                StringGetEnd10(text);
-                toCpy = text;
+				
+				HANDLE_START_NICKNAME_STRING_CASE(B_POSITION_PLAYER_RIGHT, B_SIDE_PLAYER)
                 break;
             case B_TXT_OPPONENT_MON2_NAME: // second enemy poke name
-                GetMonData(&gEnemyParty[gBattlerPartyIndexes[GetBattlerAtPosition(B_POSITION_OPPONENT_RIGHT)]],
-                           MON_DATA_NICKNAME, text);
-                StringGetEnd10(text);
-                toCpy = text;
+				HANDLE_START_NICKNAME_STRING_CASE(B_POSITION_OPPONENT_RIGHT, B_SIDE_OPPONENT)
                 break;
             case B_TXT_LINK_PLAYER_MON1_NAME: // link first player poke name
                 GetMonData(&gPlayerParty[gBattlerPartyIndexes[gLinkPlayers[multiplayerId].id]],

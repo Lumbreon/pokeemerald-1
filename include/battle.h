@@ -114,6 +114,7 @@ struct DisableStruct
     u8 throatChopTimer;
     u8 usedMoves:4;
     u8 wrapTurns;
+    u8 illusion;
 };
 
 struct ProtectStruct

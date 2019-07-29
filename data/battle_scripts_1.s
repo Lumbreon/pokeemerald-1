@@ -4619,6 +4619,7 @@ BattleScript_FaintAttacker::
 	return
 
 BattleScript_FaintTarget::
+	brokefaintedillusion
 	playfaintcry BS_TARGET
 	pause 0x40
 	dofaintanimation BS_TARGET
@@ -7084,3 +7085,15 @@ BattleScript_PrintPlayerForfeitedLinkBattle::
 	atk57
 	waitmessage 0x40
 	end2
+
+BattleScript_BrokeIllusion::
+	call BattleScript_AbilityPopUp
+	copybyte gEffectBattler, gBattlerAttacker
+	copybyte gBattlerAttacker, gBattlerTarget
+	playmoveanimation BS_ATTACKER, MOVE_TRANSFORM
+	waitanimation
+	updatenickname BS_ATTACKER
+	copybyte gBattlerAttacker, gEffectBattler
+	printstring STRINGID_UNDOILLUSION
+	waitmessage 0x40
+	return

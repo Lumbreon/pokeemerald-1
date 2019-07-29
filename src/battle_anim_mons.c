@@ -16,8 +16,10 @@
 #include "util.h"
 #include "constants/battle_anim.h"
 #include "constants/species.h"
+#include "constants/abilities.h"
 
 #define IS_DOUBLE_BATTLE() ((gBattleTypeFlags & BATTLE_TYPE_DOUBLE))
+u8 GetIllusionMon(u8 side, u8 battlerId);
 
 extern const struct OamData gUnknown_0852497C;
 
@@ -173,8 +175,26 @@ u8 GetBattlerYDelta(u8 battlerId, u16 species)
     u32 personality;
     struct BattleSpriteInfo *spriteInfo;
     u8 ret;
-    u16 coordSpecies;
-
+    u16 coordSpecies;	
+	
+	if (gBattleMons[battlerId].ability == ABILITY_ILLUSION && !gDisableStructs[battlerId].illusion)
+		{
+			switch (GetBattlerSide(battlerId))
+				{
+					case B_SIDE_OPPONENT:
+					if (species == GetMonData(&gEnemyParty[GetIllusionMon(B_SIDE_OPPONENT, battlerId)], MON_DATA_SPECIES))
+						break;
+					else
+						species = GetMonData(&gEnemyParty[GetIllusionMon(B_SIDE_OPPONENT, battlerId)], MON_DATA_SPECIES);
+					break;
+					case B_SIDE_PLAYER:
+					if (species == GetMonData(&gPlayerParty[GetIllusionMon(B_SIDE_PLAYER, battlerId)], MON_DATA_SPECIES))
+						break;
+					else
+						species = GetMonData(&gPlayerParty[GetIllusionMon(B_SIDE_PLAYER, battlerId)], MON_DATA_SPECIES);
+					break;
+				}
+		}
     if (GetBattlerSide(battlerId) == B_SIDE_PLAYER || IsContest())
     {
         if (species == SPECIES_UNOWN)
@@ -206,7 +226,7 @@ u8 GetBattlerYDelta(u8 battlerId, u16 species)
             ret = gMonBackPicCoords[0].y_offset;
         }
         else
-        {
+		{
             ret = gMonBackPicCoords[species].y_offset;
         }
     }

@@ -11,6 +11,7 @@
 #include "text.h"
 #include "sound.h"
 #include "constants/songs.h"
+#include "constants/abilities.h"
 #include "decompress.h"
 #include "task.h"
 #include "util.h"
@@ -28,7 +29,7 @@
 #include "constants/battle_config.h"
 #include "data.h"
 #include "pokemon_summary_screen.h"
-
+u8 GetIllusionMon(u8 side, u8 battlerId);
 enum
 {   // Corresponds to gHealthboxElementsGfxTable (and the tables after it) in graphics.c
     // These are indexes into the tables, which are filled with 8x8 square pixel data.
@@ -1867,19 +1868,40 @@ static void UpdateNickInHealthbox(u8 healthboxSpriteId, struct Pokemon *mon)
 {
     u8 nickname[POKEMON_NAME_LENGTH + 1];
     void *ptr;
+	struct Pokemon *pkmn = mon;
     const u8 *genderTxt;
     u32 windowId, spriteTileNum;
     u8 *windowTileData;
     u16 species;
     u8 gender;
+    u8 battlerId = gSprites[healthboxSpriteId].hMain_Battler;
 
+	if (gBattleMons[battlerId].ability == ABILITY_ILLUSION && !gDisableStructs[battlerId].illusion)
+	{
+		switch (GetBattlerSide(battlerId))
+		{
+			case B_SIDE_PLAYER:
+			if (GetMonData(mon, MON_DATA_SPECIES) == GetMonData(&gPlayerParty[GetIllusionMon(B_SIDE_PLAYER, battlerId)], MON_DATA_SPECIES))
+				break;
+			else
+				pkmn = &gPlayerParty[GetIllusionMon(B_SIDE_PLAYER, battlerId)];
+			break;
+			case B_SIDE_OPPONENT:
+			if (GetMonData(mon, MON_DATA_SPECIES) == GetMonData(&gEnemyParty[GetIllusionMon(B_SIDE_OPPONENT, battlerId)], MON_DATA_SPECIES))
+				break;
+			else
+				pkmn = &gEnemyParty[GetIllusionMon(B_SIDE_OPPONENT, battlerId)];
+			break;
+		}
+	}			
+			
     StringCopy(gDisplayedStringBattle, gText_HighlightDarkGrey);
-    GetMonData(mon, MON_DATA_NICKNAME, nickname);
+    GetMonData(pkmn, MON_DATA_NICKNAME, nickname);
     StringGetEnd10(nickname);
     ptr = StringAppend(gDisplayedStringBattle, nickname);
 
-    gender = GetMonGender(mon);
-    species = GetMonData(mon, MON_DATA_SPECIES);
+    gender = GetMonGender(pkmn);
+    species = GetMonData(pkmn, MON_DATA_SPECIES);
 
     if ((species == SPECIES_NIDORAN_F || species == SPECIES_NIDORAN_M) && StringCompare(nickname, gSpeciesNames[species]) == 0)
         gender = 100;

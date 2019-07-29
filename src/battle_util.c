@@ -3282,6 +3282,19 @@ u8 AbilityBattleEffects(u8 caseID, u8 battler, u8 ability, u8 special, u16 moveA
                 effect++;
             }
             break;
+        case ABILITY_ILLUSION:
+            if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT)
+             && gBattleMons[gBattlerTarget].hp != 0
+             && !gProtectStructs[gBattlerAttacker].confusionSelfDmg
+             && !gDisableStructs[gBattlerTarget].illusion
+             && TARGET_TURN_DAMAGED)
+			 {
+				gDisableStructs[gBattlerTarget].illusion++;
+                BattleScriptPushCursor();
+                gBattlescriptCurrInstr = BattleScript_BrokeIllusion;
+                effect++;
+			 }
+			 break;
         case ABILITY_ROUGH_SKIN:
         case ABILITY_IRON_BARBS:
             if (!(gMoveResultFlags & MOVE_RESULT_NO_EFFECT)
