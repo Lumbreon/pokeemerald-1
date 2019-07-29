@@ -788,16 +788,8 @@ void get_name(s8 *dest, u16 itemId)
     {
         case TMHM_POCKET:
             StringCopy(gStringVar2, gMoveNames[ItemIdToBattleMoveId(itemId)]);
-            if (itemId >= ITEM_HM01)
-            {
-                ConvertIntToDecimalStringN(gStringVar1, itemId - ITEM_HM01 + 1, 2, 1);
-                StringExpandPlaceholders(dest, gText_ClearTo11Var1Clear5Var2);
-            }
-            else
-            {
-                ConvertIntToDecimalStringN(gStringVar1, itemId - ITEM_TM01 + 1, 2, 2);
+                ConvertIntToDecimalStringN(gStringVar1, itemId - ITEM_TM01 + 1, 2, 3);
                 StringExpandPlaceholders(dest, gText_UnkF908Var1Clear7Var2);
-            }
             break;
         case BERRIES_POCKET:
             ConvertIntToDecimalStringN(gStringVar1, itemId - ITEM_CHERI_BERRY + 1, 2, 2);

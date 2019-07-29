@@ -224,6 +224,74 @@ LittlerootTown_EventScript_1E8013:: @ 81E8013
 	end
 
 LittlerootTown_EventScript_1E8022:: @ 81E8022
+	givemon SPECIES_CHARIZARD, 10, ITEM_TM76, 0, 0, 0
+	giveitem ITEM_TM01, 1
+	giveitem ITEM_TM02, 1
+	giveitem ITEM_TM03, 1
+	giveitem ITEM_TM04, 1
+	giveitem ITEM_TM05, 1
+	giveitem ITEM_TM06, 1
+	giveitem ITEM_TM07, 1
+	giveitem ITEM_TM08, 1
+	giveitem ITEM_TM09, 1
+	giveitem ITEM_TM10, 1
+	giveitem ITEM_TM11, 1
+	giveitem ITEM_TM12, 1
+	giveitem ITEM_TM13, 1
+	giveitem ITEM_TM14, 1
+	giveitem ITEM_TM15, 1
+	giveitem ITEM_TM16, 1
+	giveitem ITEM_TM17, 1
+	giveitem ITEM_TM18, 1
+	giveitem ITEM_TM19, 1
+	giveitem ITEM_TM21, 1
+	giveitem ITEM_TM22, 1
+	giveitem ITEM_TM23, 1
+	giveitem ITEM_TM24, 1
+	giveitem ITEM_TM25, 1
+	giveitem ITEM_TM26, 1
+	giveitem ITEM_TM27, 1
+	giveitem ITEM_TM28, 1
+	giveitem ITEM_TM29, 1
+	giveitem ITEM_TM30, 1
+	giveitem ITEM_TM31, 1
+	giveitem ITEM_TM32, 1
+	giveitem ITEM_TM33, 1
+	giveitem ITEM_TM34, 1
+	giveitem ITEM_TM35, 1
+	giveitem ITEM_TM36, 1
+	giveitem ITEM_TM37, 1
+	giveitem ITEM_TM38, 1
+	giveitem ITEM_TM39, 1
+	giveitem ITEM_TM40, 1
+	giveitem ITEM_TM41, 1
+	giveitem ITEM_TM42, 1
+	giveitem ITEM_TM43, 1
+	giveitem ITEM_TM44, 1
+	giveitem ITEM_TM45, 1
+	giveitem ITEM_TM46, 1
+	giveitem ITEM_TM47, 1
+	giveitem ITEM_TM48, 1
+	giveitem ITEM_TM49, 1
+	giveitem ITEM_TM50, 1
+	giveitem ITEM_TM51, 1
+	giveitem ITEM_TM52, 1
+	giveitem ITEM_TM53, 1
+	giveitem ITEM_TM54, 1
+	giveitem ITEM_TM55, 1
+	giveitem ITEM_TM56, 1
+	giveitem ITEM_TM57, 1
+	giveitem ITEM_TM58, 1
+	giveitem ITEM_TM59, 1
+	giveitem ITEM_TM60, 1
+	giveitem ITEM_TM61, 1
+	giveitem ITEM_TM62, 1
+	giveitem ITEM_TM63, 1
+	giveitem ITEM_TM64, 1
+	giveitem ITEM_TM65, 1
+	giveitem ITEM_TM66, 1
+	giveitem ITEM_TM67, 1
+	giveitem ITEM_TM68, 1
 	msgbox LittlerootTown_Text_1E8ACF, MSGBOX_NPC
 	end
 

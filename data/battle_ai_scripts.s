@@ -2440,8 +2440,19 @@ AI_CV_SunnyDay:
 	if_equal AI_WEATHER_HAIL, AI_CV_SunnyDay2
 	if_equal AI_WEATHER_RAIN, AI_CV_SunnyDay2
 	if_equal AI_WEATHER_SANDSTORM, AI_CV_SunnyDay2
+	if_hp_less_than AI_USER, 70, AI_CV_SunnyDay_ScoreDown1
+	get_user_type1
+	if_equal TYPE_FIRE, AI_CV_SunnyDay2
+	get_user_type2
+	if_equal TYPE_FIRE, AI_CV_SunnyDay2
+	get_ability AI_USER
+	if_equal ABILITY_CHLOROPHYLL, AI_CV_SunnyDay2
+	if_equal ABILITY_SOLAR_POWER, AI_CV_SunnyDay2
+	get_ability AI_USER_PARTNER
+	if_equal ABILITY_CHLOROPHYLL, AI_CV_SunnyDay2
+	if_equal ABILITY_SOLAR_POWER, AI_CV_SunnyDay2
 	goto AI_CV_SunnyDay_End
-
+	
 AI_CV_SunnyDay2:
 	score +1
 	goto AI_CV_SunnyDay_End
